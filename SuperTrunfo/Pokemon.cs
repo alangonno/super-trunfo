@@ -10,12 +10,12 @@ namespace SuperTrunfo
         public string Tipo { get; set; }
         public int Ataque { get; set; }
         public int Defesa { get; set; }
+        public int vida { get; set; }
 
-        // Inicializar com um valor padrão do enum (ou remover o inicializador)
-        public Elementos TipoElemento { get; set; } = Elementos.Fogo;
+    
         public decimal Efetivo(Pokemon pokemon1, Pokemon pokemon2)
         {
-            return (pokemon1.TipoElemento, pokemon2.TipoElemento) switch
+            return (pokemon1.Tipo, pokemon2.Tipo) switch
             {
                 (Elementos.Fogo, Elementos.Planta) => 2m,
                 (Elementos.Planta, Elementos.Fogo) => 0.5m,

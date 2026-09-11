@@ -36,7 +36,7 @@ Pokemon pokemon4 = new Pokemon
     Tipo = "Fogo",
     Ataque = 55,
     Defesa = 40,
-    TipoElemento = Elementos.Fogo // Ajuste conforme necessário
+    TipoElemento = Elementos.Fogo
 };
 
 Jogador jogador1 = new Jogador("Jonas", pokemon1);
