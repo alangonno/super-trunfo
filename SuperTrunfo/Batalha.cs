@@ -1,62 +1,53 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SuperTrunfo
 {
-    internal class Batalha
+    public class Batalha
     {
-        public void IniciarBatalha(Pokemon pokemon1, Pokemon pokemon2)
+        public int IniciarBatalha(Pokemon pokemon1, Pokemon pokemon2, string atributoEscolhido)
         {
-            Console.WriteLine($"Batalha entre {pokemon1.Nome} e {pokemon2.Nome}!");
-            Console.WriteLine($"Atributos de {pokemon1.Nome}: Ataque = {pokemon1.Ataque}, Defesa = {pokemon1.Defesa}");
-            Console.WriteLine($"Atributos de {pokemon2.Nome}: Ataque = {pokemon2.Ataque}, Defesa = {pokemon2.Defesa}");
-            if (pokemon1.Ataque > pokemon2.Defesa)
+            ConsoleUI.EscreverSeparador();
+
+            Console.Write("Batalha entre ");
+            ConsoleUI.EscreverInline(pokemon1.Nome, ConsoleUI.CorDoTipo(pokemon1.TipoElemento));
+            Console.Write(" e ");
+            ConsoleUI.EscreverInline(pokemon2.Nome, ConsoleUI.CorDoTipo(pokemon2.TipoElemento));
+            Console.WriteLine($"! Atributo: {atributoEscolhido}");
+
+            decimal valor1 = pokemon1.ObterAtributo(atributoEscolhido) * Efetivo(pokemon1, pokemon2);
+            decimal valor2 = pokemon2.ObterAtributo(atributoEscolhido) * Efetivo(pokemon2, pokemon1);
+
+            Console.WriteLine($"{pokemon1.Nome}: {atributoEscolhido} efetivo = {valor1}");
+            Console.WriteLine($"{pokemon2.Nome}: {atributoEscolhido} efetivo = {valor2}");
+
+            if (valor1 > valor2)
             {
-                Console.WriteLine($"{pokemon1.Nome} venceu a batalha!");
+                ConsoleUI.Escrever($"{pokemon1.Nome} venceu a rodada!", ConsoleColor.Green);
+                return 1;
             }
-            else if (pokemon2.Ataque > pokemon1.Defesa)
+
+            if (valor2 > valor1)
             {
-                Console.WriteLine($"{pokemon2.Nome} venceu a batalha!");
+                ConsoleUI.Escrever($"{pokemon2.Nome} venceu a rodada!", ConsoleColor.Green);
+                return 2;
             }
-            else
-            {
-                Console.WriteLine("A batalha terminou em empate!");
-            }
+
+            ConsoleUI.Escrever("A rodada terminou em empate!", ConsoleColor.DarkYellow);
+            return 0;
         }
 
-        public decimal Efetivo (Pokemon pokemon1, Pokemon pokemon2)
+        private decimal Efetivo(Pokemon atacante, Pokemon defensor)
         {
-            decimal efetivo = 0;
-            if (pokemon1.Tipo == "Fogo" && pokemon2.Tipo == "Planta")
+            return (atacante.TipoElemento, defensor.TipoElemento) switch
             {
-                efetivo = 2;
-            }
-            else if (pokemon1.Tipo == "Planta" && pokemon2.Tipo == "Fogo")
-            {
-                efetivo = 0.5m;
-            }
-            else if (pokemon1.Tipo == "Agua" && pokemon2.Tipo == "Fogo")
-            {
-                efetivo = 2;
-            }
-            else if (pokemon1.Tipo == "Fogo" && pokemon2.Tipo == "Agua")
-            {
-                efetivo = 0.5m;
-            }
-            else if (pokemon1.Tipo == "Agua" && pokemon2.Tipo == "Planta")
-            {
-                efetivo = 0.5m;
-            }
-            else if (pokemon1.Tipo == "Planta" && pokemon2.Tipo == "Agua")
-            {
-                efetivo = 2;
-            }
-            else
-            {
-                efetivo = 1;
-            }
-            return efetivo;
-        } 
+                (Elementos.Fogo, Elementos.Planta) => 2m,
+                (Elementos.Planta, Elementos.Fogo) => 0.5m,
+                (Elementos.Agua, Elementos.Fogo) => 2m,
+                (Elementos.Fogo, Elementos.Agua) => 0.5m,
+                (Elementos.Agua, Elementos.Planta) => 0.5m,
+                (Elementos.Planta, Elementos.Agua) => 2m,
+                _ => 1m
+            };
+        }
     }
 }
