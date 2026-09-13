@@ -14,7 +14,7 @@ namespace SuperTrunfo.Tests
 
         public IniciarBatalhaTests()
         {
-            // Isola o teste da saída de Console (a impressão é apresentação, não a regra testada)
+            
             _consoleOriginal = Console.Out;
             Console.SetOut(TextWriter.Null);
         }

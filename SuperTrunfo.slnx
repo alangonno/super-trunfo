@@ -1,4 +1,4 @@
 <Solution>
   <Project Path="SuperTrunfo/SuperTrunfo.csproj" />
-  <Project Path="test-super-trunfo/test-super-trunfo.csproj" Id="8b2d7833-843a-4d34-98de-a824b4437712" />
+  <Project Path="test-super-trunfo/TesteSuperTrunfo.csproj" Id="8b2d7833-843a-4d34-98de-a824b4437712" />
 </Solution>

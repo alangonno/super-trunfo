@@ -3,7 +3,7 @@ using SuperTrunfo;
 
 namespace SuperTrunfo.Tests
 {
-    // Requer que "Efetivo" seja internal + [assembly: InternalsVisibleTo("SuperTrunfo.Tests")]
+   
     public class EfetivoTests
     {
         private readonly Batalha _batalha = new Batalha();

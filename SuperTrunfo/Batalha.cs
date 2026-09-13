@@ -36,7 +36,7 @@ namespace SuperTrunfo
             return 0;
         }
 
-        internal decimal Efetivo(Pokemon atacante, Pokemon defensor) => (atacante.TipoElemento, defensor.TipoElemento) switch
+        public decimal Efetivo(Pokemon atacante, Pokemon defensor) => (atacante.TipoElemento, defensor.TipoElemento) switch
         {
             (Elementos.Fogo, Elementos.Planta) => 2m,
             (Elementos.Planta, Elementos.Fogo) => 0.5m,
