@@ -36,18 +36,15 @@ namespace SuperTrunfo
             return 0;
         }
 
-        private decimal Efetivo(Pokemon atacante, Pokemon defensor)
+        internal decimal Efetivo(Pokemon atacante, Pokemon defensor) => (atacante.TipoElemento, defensor.TipoElemento) switch
         {
-            return (atacante.TipoElemento, defensor.TipoElemento) switch
-            {
-                (Elementos.Fogo, Elementos.Planta) => 2m,
-                (Elementos.Planta, Elementos.Fogo) => 0.5m,
-                (Elementos.Agua, Elementos.Fogo) => 2m,
-                (Elementos.Fogo, Elementos.Agua) => 0.5m,
-                (Elementos.Agua, Elementos.Planta) => 0.5m,
-                (Elementos.Planta, Elementos.Agua) => 2m,
-                _ => 1m
-            };
-        }
+            (Elementos.Fogo, Elementos.Planta) => 2m,
+            (Elementos.Planta, Elementos.Fogo) => 0.5m,
+            (Elementos.Agua, Elementos.Fogo) => 2m,
+            (Elementos.Fogo, Elementos.Agua) => 0.5m,
+            (Elementos.Agua, Elementos.Planta) => 0.5m,
+            (Elementos.Planta, Elementos.Agua) => 2m,
+            _ => 1m
+        };
     }
 }

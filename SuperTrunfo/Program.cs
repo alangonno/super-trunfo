@@ -1,5 +1,8 @@
 ﻿using SuperTrunfo;
 using System;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("test-super-trunfo")]
 
 ConsoleUI.EscreverTitulo("Super Trunfo Pokémon");
 
