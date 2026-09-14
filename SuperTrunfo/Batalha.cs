@@ -1,41 +1,38 @@
-﻿using System;
-
-namespace SuperTrunfo
+﻿namespace SuperTrunfo
 {
     public class Batalha
     {
-        public int IniciarBatalha(Pokemon pokemon1, Pokemon pokemon2, string atributoEscolhido)
+        // Esta classe só calcula. Ela não escreve nada na tela.
+        // Por isso dá para testá-la sem precisar redirecionar o Console.
+        public ResultadoBatalha IniciarBatalha(Pokemon pokemon1, Pokemon pokemon2, string atributoEscolhido)
         {
-            ConsoleUI.EscreverSeparador();
-
-            Console.Write("Batalha entre ");
-            ConsoleUI.EscreverInline(pokemon1.Nome, ConsoleUI.CorDoTipo(pokemon1.TipoElemento));
-            Console.Write(" e ");
-            ConsoleUI.EscreverInline(pokemon2.Nome, ConsoleUI.CorDoTipo(pokemon2.TipoElemento));
-            Console.WriteLine($"! Atributo: {atributoEscolhido}");
-
+            // Se o atributo não existir, ObterAtributo lança AtributoInvalidoException
+            // e ela sobe (propaga) para quem chamou IniciarBatalha.
             decimal valor1 = pokemon1.ObterAtributo(atributoEscolhido) * Efetivo(pokemon1, pokemon2);
             decimal valor2 = pokemon2.ObterAtributo(atributoEscolhido) * Efetivo(pokemon2, pokemon1);
 
-            Console.WriteLine($"{pokemon1.Nome}: {atributoEscolhido} efetivo = {valor1}");
-            Console.WriteLine($"{pokemon2.Nome}: {atributoEscolhido} efetivo = {valor2}");
+            ResultadoBatalha resultado = new ResultadoBatalha();
+            resultado.ValorJogador1 = valor1;
+            resultado.ValorJogador2 = valor2;
 
             if (valor1 > valor2)
             {
-                ConsoleUI.Escrever($"{pokemon1.Nome} venceu a rodada!", ConsoleColor.Green);
-                return 1;
+                resultado.Vencedor = ResultadoRodada.Jogador1;
             }
-
-            if (valor2 > valor1)
+            else if (valor2 > valor1)
             {
-                ConsoleUI.Escrever($"{pokemon2.Nome} venceu a rodada!", ConsoleColor.Green);
-                return 2;
+                resultado.Vencedor = ResultadoRodada.Jogador2;
+            }
+            else
+            {
+                resultado.Vencedor = ResultadoRodada.Empate;
             }
 
-            ConsoleUI.Escrever("A rodada terminou em empate!", ConsoleColor.DarkYellow);
-            return 0;
+            return resultado;
         }
 
+        // Tabela de efetividade: Fogo > Planta > Água > Fogo.
+        // 2 = vantagem, 0,5 = desvantagem, 1 = neutro.
         public decimal Efetivo(Pokemon atacante, Pokemon defensor) => (atacante.TipoElemento, defensor.TipoElemento) switch
         {
             (Elementos.Fogo, Elementos.Planta) => 2m,

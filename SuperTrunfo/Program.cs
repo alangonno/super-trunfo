@@ -1,85 +1,145 @@
 ﻿using SuperTrunfo;
 using System;
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("test-super-trunfo")]
-
-ConsoleUI.EscreverTitulo("Super Trunfo Pokémon");
-
-Jogador jogador1 = new Jogador(LerNome("Jogador 1"));
-MontarBaralho(jogador1);
-
-Jogador jogador2 = new Jogador(LerNome("Jogador 2"));
-MontarBaralho(jogador2);
-
-Batalha batalha = new Batalha();
-int pontosJogador1 = 0;
-int pontosJogador2 = 0;
-int rodada = 1;
-
-while (jogador1.Baralho.Count > 0 && jogador2.Baralho.Count > 0)
+// try/catch externo: envolve o jogo inteiro.
+// Se qualquer erro escapar dos try/catch de dentro, ele é tratado aqui
+// e o programa termina com uma mensagem, em vez de quebrar na cara do usuário.
+try
 {
-    Pokemon pokemon1 = jogador1.ProximoPokemon();
-    Pokemon pokemon2 = jogador2.ProximoPokemon();
+    // Faz o console entender os acentos das mensagens.
+    Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-    ConsoleUI.EscreverTitulo($"Rodada {rodada}");
-    Console.Write($"{jogador1.Nome}: ");
-    ConsoleUI.EscreverInline(pokemon1.Nome, ConsoleUI.CorDoTipo(pokemon1.TipoElemento));
-    Console.Write($"   |   {jogador2.Nome}: ");
-    ConsoleUI.EscreverInline(pokemon2.Nome, ConsoleUI.CorDoTipo(pokemon2.TipoElemento));
-    Console.WriteLine();
+    ConsoleUI.EscreverTitulo("Super Trunfo Pokémon");
 
-    string atributo = LerAtributo();
+    Jogador jogador1 = new Jogador(LerNome("Jogador 1"));
+    MontarBaralho(jogador1);
 
-    int resultado = batalha.IniciarBatalha(pokemon1, pokemon2, atributo);
-    if (resultado == 1) pontosJogador1++;
-    else if (resultado == 2) pontosJogador2++;
+    Jogador jogador2 = new Jogador(LerNome("Jogador 2"));
+    MontarBaralho(jogador2);
 
-    rodada++;
+    Batalha batalha = new Batalha();
+    int pontosJogador1 = 0;
+    int pontosJogador2 = 0;
+    int rodada = 1;
+
+    while (jogador1.Baralho.Count > 0 && jogador2.Baralho.Count > 0)
+    {
+        Pokemon pokemon1 = jogador1.ProximoPokemon();
+        Pokemon pokemon2 = jogador2.ProximoPokemon();
+
+        ConsoleUI.EscreverTitulo($"Rodada {rodada}");
+        ConsoleUI.MostrarDuelo(jogador1, pokemon1, jogador2, pokemon2);
+
+        string atributo = LerAtributo();
+
+        // A Batalha só calcula; quem mostra o resultado é o ConsoleUI.
+        ResultadoBatalha resultado = batalha.IniciarBatalha(pokemon1, pokemon2, atributo);
+        ConsoleUI.MostrarResultadoBatalha(jogador1, pokemon1, jogador2, pokemon2, atributo, resultado);
+
+        if (resultado.Vencedor == ResultadoRodada.Jogador1)
+        {
+            pontosJogador1++;
+        }
+        else if (resultado.Vencedor == ResultadoRodada.Jogador2)
+        {
+            pontosJogador2++;
+        }
+
+        rodada++;
+    }
+
+    ConsoleUI.EscreverTitulo("Fim de jogo");
+    Console.WriteLine($"Placar final: {jogador1.Nome} {pontosJogador1} x {pontosJogador2} {jogador2.Nome}");
+
+    if (pontosJogador1 > pontosJogador2)
+    {
+        ConsoleUI.Escrever($"{jogador1.Nome} venceu o jogo!", ConsoleColor.Green);
+    }
+    else if (pontosJogador2 > pontosJogador1)
+    {
+        ConsoleUI.Escrever($"{jogador2.Nome} venceu o jogo!", ConsoleColor.Green);
+    }
+    else
+    {
+        ConsoleUI.Escrever("O jogo terminou empatado!", ConsoleColor.DarkYellow);
+    }
 }
-
-ConsoleUI.EscreverTitulo("Fim de jogo");
-Console.WriteLine($"Placar final: {jogador1.Nome} {pontosJogador1} x {pontosJogador2} {jogador2.Nome}");
-
-if (pontosJogador1 > pontosJogador2)
-    ConsoleUI.Escrever($"{jogador1.Nome} venceu o jogo!", ConsoleColor.Green);
-else if (pontosJogador2 > pontosJogador1)
-    ConsoleUI.Escrever($"{jogador2.Nome} venceu o jogo!", ConsoleColor.Green);
-else
-    ConsoleUI.Escrever("O jogo terminou empatado!", ConsoleColor.DarkYellow);
+catch (SuperTrunfoException erro)
+{
+    // Pega qualquer erro de regra do jogo (as quatro exceções são filhas desta).
+    ConsoleUI.Escrever($"Erro de regra do jogo: {erro.Message}", ConsoleColor.Red);
+}
+catch (Exception erro)
+{
+    // Rede de segurança: qualquer outro erro inesperado cai aqui.
+    ConsoleUI.Escrever($"Erro inesperado: {erro.Message}", ConsoleColor.Red);
+}
+finally
+{
+    // O finally roda sempre: com erro ou sem erro.
+    Console.WriteLine();
+    Console.WriteLine("Pressione ENTER para sair.");
+    Console.ReadLine();
+}
 
 
 static string LerNome(string rotulo)
 {
     Console.Write($"Nome do {rotulo}: ");
-    string nome = Console.ReadLine();
+
+    // ReadLine() pode devolver null; o ?? troca null por texto vazio.
+    string nome = Console.ReadLine() ?? string.Empty;
+
     return string.IsNullOrWhiteSpace(nome) ? rotulo : nome;
 }
 
 static void MontarBaralho(Jogador jogador)
 {
-    ConsoleUI.EscreverTitulo($"{jogador.Nome}, escolha 3 pokémons");
+    ConsoleUI.EscreverTitulo($"{jogador.Nome}, escolha {Jogador.MaxPokemonsNoBaralho} pokémons");
 
     for (int i = 0; i < Pokedex.Todos.Count; i++)
     {
-        Pokemon p = Pokedex.Todos[i];
-        Console.Write($"{i + 1} - ");
-        ConsoleUI.EscreverInline(p.Nome, ConsoleUI.CorDoTipo(p.TipoElemento));
-        Console.WriteLine($" (Ataque: {p.Ataque}, Defesa: {p.Defesa}, Tipo: {p.TipoElemento})");
+        ConsoleUI.MostrarCarta(i + 1, Pokedex.Todos[i]);
     }
 
-    while (jogador.Baralho.Count < 3)
+    while (jogador.Baralho.Count < Jogador.MaxPokemonsNoBaralho)
     {
-        Console.Write($"Escolha o pokémon {jogador.Baralho.Count + 1}/3: ");
-        string entrada = Console.ReadLine();
+        Console.Write($"Escolha o pokémon {jogador.Baralho.Count + 1}/{Jogador.MaxPokemonsNoBaralho}: ");
 
-        if (!int.TryParse(entrada, out int escolha) || escolha < 1 || escolha > Pokedex.Todos.Count)
+        // try/catch da escolha das cartas: avisa o erro e pergunta de novo,
+        // sem encerrar o jogo.
+        try
         {
-            ConsoleUI.Escrever("Número inválido, tente de novo.", ConsoleColor.Red);
-            continue;
-        }
+            string entrada = Console.ReadLine() ?? string.Empty;
 
-        jogador.EscolherPokemon(Pokedex.Todos[escolha - 1]);
+            // int.Parse lança FormatException quando a entrada não é um número.
+            int escolha = int.Parse(entrada);
+
+            // O indexador da List lança ArgumentOutOfRangeException
+            // quando a posição não existe na lista.
+            Pokemon escolhido = Pokedex.Todos[escolha - 1];
+
+            // EscolherPokemon lança PokemonDuplicadoException se a carta já estiver no baralho.
+            jogador.EscolherPokemon(escolhido);
+
+            ConsoleUI.Escrever($"{escolhido.Nome} entrou no baralho.", ConsoleColor.Green);
+        }
+        catch (FormatException)
+        {
+            ConsoleUI.Escrever("Digite um número, não letras.", ConsoleColor.Red);
+        }
+        catch (OverflowException)
+        {
+            ConsoleUI.Escrever($"Número grande demais. Escolha entre 1 e {Pokedex.Todos.Count}.", ConsoleColor.Red);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            ConsoleUI.Escrever($"Escolha um número entre 1 e {Pokedex.Todos.Count}.", ConsoleColor.Red);
+        }
+        catch (PokemonDuplicadoException erro)
+        {
+            ConsoleUI.Escrever(erro.Message, ConsoleColor.Red);
+        }
     }
 }
 
@@ -88,13 +148,19 @@ static string LerAtributo()
     while (true)
     {
         Console.Write("Escolha o atributo (Ataque/Defesa): ");
-        string entrada = Console.ReadLine()?.Trim();
+        string entrada = Console.ReadLine() ?? string.Empty;
 
-        if (string.Equals(entrada, "Ataque", StringComparison.OrdinalIgnoreCase))
-            return "Ataque";
-        if (string.Equals(entrada, "Defesa", StringComparison.OrdinalIgnoreCase))
-            return "Defesa";
-
-        ConsoleUI.Escrever("Atributo inválido. Digite Ataque ou Defesa.", ConsoleColor.Red);
+        // try/catch da escolha do atributo: quem valida é a classe Pokemon.
+        try
+        {
+            // NormalizarAtributo confere se o atributo existe e devolve o nome
+            // no formato certo ("Ataque" ou "Defesa"). Se não existir, lança
+            // AtributoInvalidoException.
+            return Pokemon.NormalizarAtributo(entrada);
+        }
+        catch (AtributoInvalidoException erro)
+        {
+            ConsoleUI.Escrever(erro.Message, ConsoleColor.Red);
+        }
     }
 }

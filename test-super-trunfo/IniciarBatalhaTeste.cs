@@ -1,31 +1,19 @@
-﻿using System;
-using System.IO;
-using Xunit;
+﻿using Xunit;
 using SuperTrunfo;
 
 namespace SuperTrunfo.Tests
 {
-    public class IniciarBatalhaTests : IDisposable
+    // A Batalha não escreve mais no Console, então não precisamos
+    // redirecionar a saída para testar.
+    public class IniciarBatalhaTests
     {
         private const string ATRIBUTO_ATAQUE = "Ataque";
+        private const string ATRIBUTO_DEFESA = "Defesa";
 
         private readonly Batalha _batalha = new Batalha();
-        private readonly TextWriter _consoleOriginal;
-
-        public IniciarBatalhaTests()
-        {
-            
-            _consoleOriginal = Console.Out;
-            Console.SetOut(TextWriter.Null);
-        }
-
-        public void Dispose()
-        {
-            Console.SetOut(_consoleOriginal);
-        }
 
         [Fact]
-        public void IniciarBatalha_WhenPokemon1HasHigherEffectiveValue_ReturnsOne()
+        public void IniciarBatalha_WhenPokemon1HasHigherEffectiveValue_ReturnsJogador1()
         {
             // Arrange
             var pokemon1 = new Pokemon { Nome = "Charmander", TipoElemento = Elementos.Fogo, Ataque = 50 };
@@ -35,11 +23,11 @@ namespace SuperTrunfo.Tests
             var resultado = _batalha.IniciarBatalha(pokemon1, pokemon2, ATRIBUTO_ATAQUE);
 
             // Assert
-            Assert.Equal(1, resultado);
+            Assert.Equal(ResultadoRodada.Jogador1, resultado.Vencedor);
         }
 
         [Fact]
-        public void IniciarBatalha_WhenPokemon2HasHigherEffectiveValue_ReturnsTwo()
+        public void IniciarBatalha_WhenPokemon2HasHigherEffectiveValue_ReturnsJogador2()
         {
             // Arrange
             var pokemon1 = new Pokemon { Nome = "Bulbasaur", TipoElemento = Elementos.Planta, Ataque = 50 };
@@ -49,11 +37,11 @@ namespace SuperTrunfo.Tests
             var resultado = _batalha.IniciarBatalha(pokemon1, pokemon2, ATRIBUTO_ATAQUE);
 
             // Assert
-            Assert.Equal(2, resultado);
+            Assert.Equal(ResultadoRodada.Jogador2, resultado.Vencedor);
         }
 
         [Fact]
-        public void IniciarBatalha_WhenBothHaveEqualEffectiveValue_ReturnsZero()
+        public void IniciarBatalha_WhenBothHaveEqualEffectiveValue_ReturnsEmpate()
         {
             // Arrange
             var pokemon1 = new Pokemon { Nome = "Charmander", TipoElemento = Elementos.Fogo, Ataque = 50 };
@@ -63,7 +51,63 @@ namespace SuperTrunfo.Tests
             var resultado = _batalha.IniciarBatalha(pokemon1, pokemon2, ATRIBUTO_ATAQUE);
 
             // Assert
-            Assert.Equal(0, resultado);
+            Assert.Equal(ResultadoRodada.Empate, resultado.Vencedor);
+        }
+
+        [Fact]
+        public void IniciarBatalha_WhenAttackerHasTypeAdvantage_DoublesTheEffectiveValue()
+        {
+            // Arrange
+            var pokemon1 = new Pokemon { Nome = "Charmander", TipoElemento = Elementos.Fogo, Ataque = 50 };
+            var pokemon2 = new Pokemon { Nome = "Bulbasaur", TipoElemento = Elementos.Planta, Ataque = 50 };
+
+            // Act
+            var resultado = _batalha.IniciarBatalha(pokemon1, pokemon2, ATRIBUTO_ATAQUE);
+
+            // Assert
+            Assert.Equal(100m, resultado.ValorJogador1);
+        }
+
+        [Fact]
+        public void IniciarBatalha_WhenAttackerHasTypeDisadvantage_HalvesTheEffectiveValue()
+        {
+            // Arrange
+            var pokemon1 = new Pokemon { Nome = "Bulbasaur", TipoElemento = Elementos.Planta, Ataque = 50 };
+            var pokemon2 = new Pokemon { Nome = "Charmander", TipoElemento = Elementos.Fogo, Ataque = 50 };
+
+            // Act
+            var resultado = _batalha.IniciarBatalha(pokemon1, pokemon2, ATRIBUTO_ATAQUE);
+
+            // Assert
+            Assert.Equal(25m, resultado.ValorJogador1);
+        }
+
+        [Fact]
+        public void IniciarBatalha_WhenAttributeIsDefesa_UsesDefesaAndNotAtaque()
+        {
+            // Arrange
+            var pokemon1 = new Pokemon { Nome = "Squirtle", TipoElemento = Elementos.Agua, Ataque = 10, Defesa = 80 };
+            var pokemon2 = new Pokemon { Nome = "Wartortle", TipoElemento = Elementos.Agua, Ataque = 90, Defesa = 40 };
+
+            // Act
+            var resultado = _batalha.IniciarBatalha(pokemon1, pokemon2, ATRIBUTO_DEFESA);
+
+            // Assert
+            Assert.Equal(80m, resultado.ValorJogador1);
+            Assert.Equal(40m, resultado.ValorJogador2);
+            Assert.Equal(ResultadoRodada.Jogador1, resultado.Vencedor);
+        }
+
+        [Fact]
+        public void IniciarBatalha_WhenAttributeIsInvalid_ThrowsAtributoInvalidoException()
+        {
+            // Arrange
+            var pokemon1 = new Pokemon { Nome = "Charmander", TipoElemento = Elementos.Fogo, Ataque = 50 };
+            var pokemon2 = new Pokemon { Nome = "Bulbasaur", TipoElemento = Elementos.Planta, Ataque = 50 };
+
+            // Act + Assert
+            Assert.Throws<AtributoInvalidoException>(
+                () => _batalha.IniciarBatalha(pokemon1, pokemon2, "Velocidade"));
         }
     }
 }
